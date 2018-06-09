@@ -143,7 +143,7 @@ function UCloud_Client_Do($req)
     if (!empty($body)) {
         $options[CURLOPT_POSTFIELDS] = $body;
     } else {
-        $options[CURLOPT_POSTFIELDS] = "";
+        $options[CURLOPT_POSTFIELDS] = [];
     }
     curl_setopt_array($ch, $options);
     $result = curl_exec($ch);
@@ -360,4 +360,34 @@ function UCloud_EscapeQuotes($str)
 }
 
 // --------------------------------------------------------------------------------
+//@results: ($data, $error)
+function UCloud_Client_Get_File($self, $req, $files, $type = HEAD_FIELD_CHECK)
+{
+    list($resp, $err) = $self->RoundTrip($req, $type);
+    if ($err !== null) {
+        return [null, $err];
+    }
 
+    return UCloud_Client_Save_File($resp, $files);
+}
+
+function UCloud_Client_Save_File($resp, $files)
+{
+    $code = $resp->StatusCode;
+    $data = null;
+    if ($code >= 200 && $code <= 299) {
+        if ($resp->ContentLength !== 0 && UCloud_Header_Get($resp->Header, 'Content-Type') == 'application/json') {
+            $data = json_decode($resp->Body, true);
+            if ($data === null) {
+                $err = new UCloud_Error($code, 0, "");
+
+                return [null, $err];
+            }
+        }
+    }
+
+    file_put_contents($files, $resp->Body);
+    $data['file'] = $files;
+
+    return [$data, UCloud_ResponseError($resp)];
+}

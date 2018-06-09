@@ -306,3 +306,25 @@ function UCloud_MakePrivateUrl($bucket, $key, $expires = 0)
     }
     return $url;
 }
+
+//------------------------------下载文件------------------------------
+// @results: $url
+function UCloud_Download($bucket, $key, $file_path)
+{
+    $err = CheckConfig(ActionType::GETFILE);
+    if ($err != null) {
+        return [null, $err];
+    }
+
+    global $UCLOUD_PROXY_SUFFIX;
+    $host = $bucket . $UCLOUD_PROXY_SUFFIX;
+    $path = $key;
+    $req = new HTTP_Request('GET', ['host' => $host, 'path' => $path], null, $bucket, $key, ActionType::GETFILE);
+//    $req->Header['Content-Type'] = 'application/x-www-form-urlencoded';
+
+    $client = new UCloud_AuthHttpClient(null);
+    $res = UCloud_Client_Get_File($client, $req, $file_path);
+    var_dump($res);
+
+    return $res;
+}

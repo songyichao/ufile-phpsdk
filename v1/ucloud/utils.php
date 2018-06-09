@@ -25,7 +25,7 @@ class UCloud_Error
     public $ErrMsg;	     // string
     public $SessionId;	 // string
 
-    public function __construct($code, $errRet, $errMsg)
+    public function __construct($code, $errRet, $errMsg = '')
     {
         $this->Code   = $code;
         $this->ErrRet = $errRet;
